@@ -44,23 +44,18 @@ class Perceptron:
     def threshold(self):
         return self._threshold
 
-    def update(self, expected_output, is_output_node=False):
+    @property
+    def prior_output(self):
+        return self._prior_output
+
+    def update(self, delta):
         """
-        Update the weights for this perceptron using the given expected value
-        :param expected_output: Expected value this perceptron should have produced
-        :param is_output_node: True if this node is an output node
+        Update the weights for this perceptron using the given delta value
+        :param delta: Delta value to use to update weights
         :return: delta produced during the update
         """
 
-        if is_output_node:
-            error = expected_output - self._prior_output
-            delta = error * self._prior_output * (1 - self._prior_output)
-        else:
-            delta = 0  # TODO
-
         self._weights += self._learning_rate * (delta * self._prior_inputs)
-
-        return delta
 
     def evaluate(self, inputs):
         """
