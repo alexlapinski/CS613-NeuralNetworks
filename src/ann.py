@@ -1,28 +1,26 @@
-from perceptron import Perceptron
+from perceptron import Perceptron, sigmoid
 import numpy as np
 
 
 class ArtificialNeuralNetwork:
 
     @staticmethod
-    def _create_nodes(num_inputs, num_nodes, learning_rate):
+    def _create_nodes(num_inputs, num_nodes, learning_rate, activation_function):
         nodes = []
         # Account for bias in inputs
-        num_inputs += 1
         for i in xrange(num_nodes):
-            nodes.append(Perceptron(num_inputs,learning_rate=learning_rate))
+            nodes.append(Perceptron(num_inputs, learning_rate=learning_rate, activation_function=activation_function))
 
         return nodes
 
-    def __init__(self, num_inputs, num_input_nodes, num_hidden_nodes, num_output_nodes, learning_rate=1.0):
-        self._input_nodes = self._create_nodes(num_inputs, num_input_nodes, learning_rate)
+    @staticmethod
+    def _insert_bias(inputs):
+        return np.c_[inputs, np.ones(inputs.shape[0])]
 
-        if num_hidden_nodes == 0:
-            self._hidden_nodes = None
-            self._output_nodes = self._create_nodes(num_input_nodes, num_output_nodes, learning_rate)
-        else:
-            self._hidden_nodes = self._create_nodes(num_input_nodes, num_hidden_nodes, learning_rate)
-            self._output_nodes = self._create_nodes(num_hidden_nodes, num_output_nodes, learning_rate)
+    def __init__(self, num_inputs, num_input_nodes, num_hidden_nodes, num_output_nodes, learning_rate=1.0):
+        self._input_nodes = self._create_nodes(num_inputs + 1, num_input_nodes, learning_rate, lambda x: x)
+        self._hidden_nodes = self._create_nodes(num_input_nodes + 1, num_hidden_nodes, learning_rate, lambda x: x)
+        self._output_nodes = self._create_nodes(num_hidden_nodes + 1, num_output_nodes, learning_rate, sigmoid)
 
     @property
     def input_nodes(self):
@@ -38,45 +36,40 @@ class ArtificialNeuralNetwork:
 
     def evaluate(self, inputs):
 
-        # add bias
-        inputs = np.append(inputs, 1)
+        # add bias input value
+        inputs = self._insert_bias(inputs)
 
         hidden_inputs = []
         for input_node in self._input_nodes:
-            hidden_inputs.append(input_node.evaluate(inputs))
+            hidden_inputs.append(input_node.evaluate(inputs).reshape(-1, 1))
 
-        # add bias
-        hidden_inputs.append(1)
+        # add bias hidden input value
+        hidden_inputs = self._insert_bias(np.hstack(hidden_inputs))
 
         output_inputs = []
-        if self._hidden_nodes is None:
-            output_inputs = hidden_inputs
-        else:
-            for hidden_node in self._hidden_nodes:
-                output_inputs.append(hidden_node.evaluate(np.array(hidden_inputs)))
+        for hidden_node in self._hidden_nodes:
+            output_inputs.append(hidden_node.evaluate(hidden_inputs).reshape(-1,1))
 
-        # Add Bias
-        output_inputs.append(1)
+        # Add output input value
+        output_inputs = self._insert_bias(np.hstack(output_inputs))
 
         final_outputs = []
         for output_node in self._output_nodes:
-            final_outputs.append(output_node.evaluate(np.array(output_inputs)))
+            final_outputs.append(output_node.evaluate(output_inputs).reshape(-1, 1))
 
-        return final_outputs
+        return np.array(final_outputs).reshape(-1, 1)
 
     def update(self, expected_outputs):
 
         # Update output node(s)
         output_node_deltas = []
-        for i in xrange(len(expected_outputs)):
+        for i in xrange(len(self._output_nodes)):
             expected_output = expected_outputs[i]
             node = self._output_nodes[i]
-            #print "Weights {0} before update: {1}".format(i, node.weights)
             error = expected_output - node.prior_output
             delta = error * node.prior_output * (1 - node.prior_output)
             node.update(delta)
             output_node_deltas.append(delta)
-            #print "after update", delta, node.weights
 
         # Update Hidden Layers (if any)
         hidden_node_deltas = []
@@ -101,18 +94,12 @@ class ArtificialNeuralNetwork:
             # For each node, capture previous output
             input_node = self._input_nodes[i]
             delta = 0
-            if self._hidden_nodes is None:
-                for j in xrange(len(self._output_nodes)):
-                    output_node = self._output_nodes[j]
-                    output_delta = output_node_deltas[j]
-                    new_weight = output_node.weights[i]
-                    delta += new_weight * output_delta
-            else:
-                for j in xrange(len(self.hidden_nodes)):
-                    hidden_node = self._hidden_nodes[j]
-                    hidden_delta = hidden_node_deltas[j]
-                    new_weight = hidden_node.weights[i]
-                    delta += new_weight * hidden_delta
+
+            for j in xrange(len(self.hidden_nodes)):
+                hidden_node = self._hidden_nodes[j]
+                hidden_delta = hidden_node_deltas[j]
+                new_weight = hidden_node.weights[i]
+                delta += new_weight * hidden_delta
 
             prior_output = input_node.prior_output
             delta *= prior_output * (1 - prior_output)

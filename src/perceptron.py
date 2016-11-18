@@ -3,7 +3,7 @@ import numpy as np
 
 
 def sigmoid(x):
-    return 1.0 / (1 + math.exp(-1*x))
+    return 1.0 / (1 + np.exp(-1*x))
 
 
 class Perceptron:
@@ -34,7 +34,7 @@ class Perceptron:
         self._activation_function = activation_function
 
     def __transfer(self, inputs):
-        return inputs.dot(self._weights)
+        return (inputs * self._weights).sum(axis=1)
 
     @property
     def weights(self):
@@ -54,8 +54,10 @@ class Perceptron:
         :param delta: Delta value to use to update weights
         :return: delta produced during the update
         """
-
-        self._weights += self._learning_rate * (delta * self._prior_inputs)
+        for i in xrange(len(delta)):
+            delta_i = delta[i]
+            prior_input_i = self._prior_inputs[i]
+            self._weights += self._learning_rate * (delta_i * prior_input_i)
 
     def evaluate(self, inputs):
         """
