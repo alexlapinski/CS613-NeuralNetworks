@@ -34,6 +34,14 @@ class ArtificialNeuralNetwork:
     def output_nodes(self):
         return self._output_nodes
 
+    def train(self, training_inputs, expected_outputs, max_iterations=1000):
+
+        iteration = 0
+        while iteration < max_iterations:
+            self.evaluate(training_inputs)
+            self.update(expected_outputs)
+            iteration += 1
+
     def evaluate(self, inputs):
 
         # add bias input value
