@@ -1,4 +1,4 @@
-from ann import ArtificialNeuralNetwork
+from .context.cs613_hw4.ann import ArtificialNeuralNetwork
 import numpy as np
 
 
