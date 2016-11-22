@@ -14,5 +14,6 @@ setup(
     author_email='contact@alexlapinski.name',
     url='https://github.com/alexlapinski/CS613-NeuralNetworks',
     license=None,
-    packages=find_packages(exclude=('tests', 'data', 'docs'))
+    packages=find_packages(exclude=('tests', 'data', 'docs')),
+    package_data={'cs613': ['data/CTG.csv','data/spambase.data']}
 )
