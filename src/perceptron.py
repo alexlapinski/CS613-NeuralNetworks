@@ -34,7 +34,7 @@ class Perceptron:
         self._activation_function = activation_function
 
     def __transfer(self, inputs):
-        return (inputs * self._weights).sum(axis=1)
+        return (inputs * self._weights.reshape(-1,1)).sum(axis=1)
 
     @property
     def weights(self):
