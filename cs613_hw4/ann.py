@@ -30,6 +30,14 @@ class SingleANN:
         self._activation_function = sigma
         self._threshold = threshold
 
+    @property
+    def hidden_weights(self):
+        return self._hidden_weights
+
+    @property
+    def output_weights(self):
+        return self._output_weights
+
     def __forward_propagate(self, inputs, verbose=False):
         """
         Forward Propagate the input values to output values
