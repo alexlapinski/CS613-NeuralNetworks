@@ -114,13 +114,13 @@ class SingleANN:
             offset = compute_weight_offset(hidden_delta, self._prior_inputs)
             self._hidden_weights[i] += offset
 
-    def evaluate(self, inputs, verbose=False):
+    def evaluate(self, inputs, threshold=0.5, verbose=False):
         """
         Evaluate the trained artificial neural network on a single sample
         :param inputs: A single sample (row vector, each column is a feature)
         :return: The output of the neural network (row vector, each column an output of each output node)
         """
-        return self.__forward_propagate(inputs, verbose)
+        return self.__forward_propagate(inputs, verbose) > threshold
 
     def train(self, inputs, expected_outputs, iterations=1000, verbose=False):
         """
