@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 
-run_exploratory_tests = True
+run_exploratory_tests = False
 
 exploratory = pytest.mark.skipif(
     not run_exploratory_tests,
@@ -12,7 +12,7 @@ exploratory = pytest.mark.skipif(
 
 
 def test_forward_propagation():
-    inputs = np.array([0.6, 0.4])
+    inputs = np.array([[0.6, 0.4]])
     expected_output = np.array([0.55621109888233611])
     expected_hidden_outputs = np.array([0.4650570548417855, 0.65475346060631923])
 
@@ -31,8 +31,29 @@ def test_forward_propagation():
     assert np.allclose(actual_output, expected_output, atol=0.001)
 
 
+def test_forward_propagation_batch():
+    inputs = np.array([[0.6, 0.4], [0.5, 0.3]])
+    expected_output = np.array([[0.55621109888233611], [0.55051199790344874]])
+    expected_hidden_outputs = np.array([[0.4650570548417855, 0.65475346060631923],
+                                        [0.47252769565540637, 0.62714776631319558]])
+
+    network = cs.ann.SingleANN(num_inputs=2,
+                               num_hidden_nodes=2,
+                               num_output_nodes=1)
+
+    network.hidden_weights = np.array([[0.4, 0.3], [-0.7, 0.9], [-0.1, 0.1]])
+    network.output_weights = np.array([[-0.5], [0.7]])
+
+    actual_output = network.evaluate(inputs)
+
+    prior_hidden_outputs = network.prior_hidden_outputs
+
+    assert np.allclose(prior_hidden_outputs, expected_hidden_outputs, atol=0.001)
+    assert np.allclose(actual_output, expected_output, atol=0.001)
+
+
 def test_backward_propagation():
-    inputs = np.array([0.6, 0.4])
+    inputs = np.array([[0.6, 0.4]])
     expected_output = np.array([1])
     network = cs.ann.SingleANN(num_inputs=2,
                                num_hidden_nodes=2,
