@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 
-run_exploratory_tests = False
+run_exploratory_tests = True
 
 exploratory = pytest.mark.skipif(
     not run_exploratory_tests,
@@ -20,18 +20,15 @@ def test_forward_propagation():
                                num_hidden_nodes=2,
                                num_output_nodes=1)
 
-    network.hidden_weights = [np.array([[0.4], [-0.7], [-0.1]]),
-                              np.array([[0.3], [0.9], [0.1]])]
-    network.output_weights = [np.array([[-0.5], [0.7]])]
+    network.hidden_weights = np.array([[0.4, 0.3], [-0.7, 0.9], [-0.1, 0.1]])
+    network.output_weights = np.array([[-0.5], [0.7]])
 
     actual_output = network.evaluate(inputs)
 
     prior_hidden_outputs = network.prior_hidden_outputs
 
-    assert prior_hidden_outputs[0] == pytest.approx(expected_hidden_outputs[0], abs=0.0001)
-    assert prior_hidden_outputs[1] == pytest.approx(expected_hidden_outputs[1], abs=0.0001)
-
-    assert actual_output[0] == pytest.approx(expected_output[0], abs=0.0001)
+    assert np.allclose(prior_hidden_outputs, expected_hidden_outputs, atol=0.001)
+    assert np.allclose(actual_output, expected_output, atol=0.001)
 
 
 def test_backward_propagation():
@@ -41,29 +38,20 @@ def test_backward_propagation():
                                num_hidden_nodes=2,
                                num_output_nodes=1)
 
-    network.hidden_weights = [np.array([[0.4], [-0.7], [-0.1]]),
-                              np.array([[0.3], [0.9], [0.1]])]
-    network.output_weights = [np.array([[-0.5], [0.7]])]
+    network.hidden_weights = np.array([[0.4, 0.3], [-0.7, 0.9], [-0.1, 0.1]])
+    network.output_weights = np.array([[-0.5], [0.7]])
 
     network.evaluate(inputs)
     network.update(expected_output)
 
-    expected_new_output_weights = np.array([[-0.44905533], [0.77172496]]).flatten()
-    actual_new_output_weights = network.output_weights[0].flatten()
-    assert actual_new_output_weights[0] == pytest.approx(expected_new_output_weights[0], abs=0.001)
-    assert actual_new_output_weights[1] == pytest.approx(expected_new_output_weights[1], abs=0.001)
+    expected_new_output_weights = np.array([[-0.44905533], [0.77172496]])
+    assert np.allclose(network.output_weights, expected_new_output_weights, atol=0.001)
 
-    expected_new_hidden_weights = [np.array([[0.39265727386632238], [-0.70489515075578502], [-0.11223787688946278]]),
-                                   np.array([[0.31146604016883561], [0.90764402677922373], [0.11911006694805942]])]
-    actual_new_hidden_weights = network.hidden_weights
+    expected_new_hidden_weights = np.array([[0.39265727386632238, 0.31146604016883561],
+                                            [-0.70489515075578502, 0.90764402677922373],
+                                            [-0.11223787688946278, 0.11911006694805942]])
 
-    for i in xrange(len(actual_new_hidden_weights)):
-        actual_weights = actual_new_hidden_weights[i].flatten()
-        expected_weights = expected_new_hidden_weights[i].flatten()
-
-        assert actual_weights[0] == pytest.approx(expected_weights[0], abs=0.001)
-        assert actual_weights[1] == pytest.approx(expected_weights[1], abs=0.001)
-        assert actual_weights[2] == pytest.approx(expected_weights[2], abs=0.001)
+    assert np.allclose(network.hidden_weights, expected_new_hidden_weights, atol=0.001)
 
 @exploratory
 def test_train():

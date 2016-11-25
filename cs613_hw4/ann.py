@@ -22,10 +22,10 @@ class SingleANN(object):
         self._learning_rate = learning_rate
 
         # Weights from Input data points to hidden nodes
-        self._hidden_weights = [np.random.uniform(-1, 1, num_inputs + 1).reshape(-1, 1) for _ in xrange(num_hidden_nodes)]
+        self._hidden_weights = np.random.uniform(-1, 1, (num_inputs + 1)*num_hidden_nodes).reshape(num_inputs + 1, num_hidden_nodes)
 
         # Weights from Hidden node outputs to output node(s)
-        self._output_weights = [np.random.uniform(-1, 1, num_hidden_nodes).reshape(-1, 1) for _ in xrange(num_output_nodes)]
+        self._output_weights = np.random.uniform(-1, 1, (num_hidden_nodes*num_output_nodes)).reshape(num_hidden_nodes, num_output_nodes)
 
         self._activation_function = sigma
 
@@ -35,7 +35,7 @@ class SingleANN(object):
 
     @hidden_weights.setter
     def hidden_weights(self, value):
-        # TODO: Check 'value' shape to make sure it matches
+        assert value.shape == self._hidden_weights.shape, "Shape of input 'value' must match"
         self._hidden_weights = value
 
     @property
@@ -44,7 +44,7 @@ class SingleANN(object):
 
     @output_weights.setter
     def output_weights(self, value):
-        # TODO: Check 'value' shape to make sure it matches
+        assert value.shape == self.output_weights.shape, "Shape of input 'value' must match"
         self._output_weights = value
 
     @property
@@ -59,7 +59,7 @@ class SingleANN(object):
     def prior_outputs(self):
         return self._prior_hidden_outputs
 
-    def __forward_propagate(self, inputs, verbose=False):
+    def __forward_propagate(self, inputs):
         """
         Forward Propagate the input values to output values
         :param inputs: row vector of inputs, each column represents one feature
@@ -69,22 +69,10 @@ class SingleANN(object):
         prepared_inputs = self._insert_bias(inputs)
         self._prior_inputs = prepared_inputs.copy()
 
-        hidden_outputs = []
-        for i in xrange(len(self._hidden_weights)):
-            hidden_weights = self._hidden_weights[i]
-            temp_hidden_outputs = prepared_inputs.dot(hidden_weights)
-            hidden_outputs.append(self._activation_function(temp_hidden_outputs))
-
-        hidden_outputs = np.array(hidden_outputs).flatten()
+        hidden_outputs = self._activation_function(prepared_inputs.dot(self._hidden_weights))
         self._prior_hidden_outputs = hidden_outputs.copy()
 
-        outputs = []
-        for i in xrange(len(self._output_weights)):
-            output_weights = self._output_weights[i]
-            temp_outputs = hidden_outputs.dot(output_weights)
-            outputs.append(self._activation_function(temp_outputs))
-
-        outputs = np.array(outputs).flatten()
+        outputs = self._activation_function(hidden_outputs.dot(self._output_weights))
         self._prior_outputs = outputs.copy()
 
         return outputs
@@ -100,10 +88,10 @@ class SingleANN(object):
         """
 
         def compute_weight_offset(delta, prior_input):
-            return (self._learning_rate * delta * prior_input).reshape(-1, 1)
+            return self._learning_rate * delta * prior_input
 
         output_deltas = []
-        for i in xrange(len(self._output_weights)):
+        for i in xrange(self._num_output_nodes):
             y_i = expected_outputs[i]
             o_i = actual_outputs[i]
             # Compute Output Delta
@@ -111,33 +99,34 @@ class SingleANN(object):
             output_deltas.append(output_delta)
 
             # Update Output Weights
-            h = self._prior_hidden_outputs.flatten()
+            h = self._prior_hidden_outputs
             offset = compute_weight_offset(output_delta, h)
-            self._output_weights[i] += offset
+            self._output_weights[:, i] += offset
 
         # Compute Inner Delta
         for i in xrange(self._num_hidden_nodes):
             sum_weighted_deltas = 0
             for k in xrange(self._num_output_nodes):
-                theta = self._output_weights[k][i]
+                theta = self._output_weights[i, k]
                 output_delta = output_deltas[k]
                 sum_weighted_deltas += output_delta * theta
 
             prior_output = self._prior_hidden_outputs[i]
             hidden_delta = sum_weighted_deltas * prior_output * (1 - prior_output)
             offset = compute_weight_offset(hidden_delta, self._prior_inputs)
-            self._hidden_weights[i] += offset
+            self._hidden_weights[:, i] += offset
 
     def update(self, expected_outputs):
         return self.__backward_propagate(expected_outputs, self._prior_outputs)
 
-    def evaluate(self, inputs, threshold=None, verbose=False):
+    def evaluate(self, inputs, threshold=None):
         """
         Evaluate the trained artificial neural network on a single sample
         :param inputs: A single sample (row vector, each column is a feature)
+        :param threshold: A floating point threshold, if output is above this, true is returned, otherwise, false
         :return: The output of the neural network (row vector, each column an output of each output node)
         """
-        output = self.__forward_propagate(inputs, verbose)
+        output = self.__forward_propagate(inputs)
         if threshold is None:
             return output
         else:
