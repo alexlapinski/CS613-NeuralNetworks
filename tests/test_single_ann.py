@@ -52,9 +52,10 @@ def test_forward_propagation_batch():
     assert np.allclose(actual_output, expected_output, atol=0.001)
 
 
+
 def test_backward_propagation():
     inputs = np.array([[0.6, 0.4]])
-    expected_output = np.array([1])
+    expected_output = np.array([[1]])
     network = cs.ann.SingleANN(num_inputs=2,
                                num_hidden_nodes=2,
                                num_output_nodes=1)
@@ -73,6 +74,34 @@ def test_backward_propagation():
                                             [-0.11223787688946278, 0.11911006694805942]])
 
     assert np.allclose(network.hidden_weights, expected_new_hidden_weights, atol=0.001)
+
+
+
+def test_backward_propagation():
+    #TODO: ADD BATCH ASSERTIONS
+    inputs = np.array([[0.6, 0.4], [0.2, 0.7]])
+    expected_output = np.array([[1]])
+    network = cs.ann.SingleANN(num_inputs=2,
+                               num_hidden_nodes=2,
+                               num_output_nodes=1)
+
+    network.hidden_weights = np.array([[0.4, 0.3],
+                                       [-0.7, 0.9],
+                                       [-0.1, 0.1]])
+    network.output_weights = np.array([[-0.5], [0.7]])
+
+    network.evaluate(inputs)
+    network.update(expected_output)
+
+    expected_new_output_weights = np.array([[-0.44905533], [0.77172496]])
+    assert np.allclose(network.output_weights, expected_new_output_weights, atol=0.001)
+
+    expected_new_hidden_weights = np.array([[0.39265727386632238, 0.31146604016883561],
+                                            [-0.70489515075578502, 0.90764402677922373],
+                                            [-0.11223787688946278, 0.11911006694805942]])
+
+    assert np.allclose(network.hidden_weights, expected_new_hidden_weights, atol=0.001)
+
 
 @exploratory
 def test_train():

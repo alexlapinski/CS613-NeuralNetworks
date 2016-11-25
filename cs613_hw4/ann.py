@@ -89,13 +89,15 @@ class SingleANN(object):
         :return: nothing
         """
 
+        num_samples = self._prior_inputs.shape[0]
+
         def compute_weight_offset(delta, prior_input):
-            return self._learning_rate * delta * prior_input
+            return (self._learning_rate / float(num_samples)) * delta.T.dot(prior_input)
 
         output_deltas = []
         for i in xrange(self._num_output_nodes):
-            y_i = expected_outputs[i]
-            o_i = actual_outputs[i]
+            y_i = expected_outputs[:, i]
+            o_i = actual_outputs[:, i]
             # Compute Output Delta
             output_delta = (y_i - o_i) * o_i * (1 - o_i)
             output_deltas.append(output_delta)
@@ -113,7 +115,7 @@ class SingleANN(object):
                 output_delta = output_deltas[k]
                 sum_weighted_deltas += output_delta * theta
 
-            prior_output = self._prior_hidden_outputs[i]
+            prior_output = self._prior_hidden_outputs[:, i]
             hidden_delta = sum_weighted_deltas * prior_output * (1 - prior_output)
             offset = compute_weight_offset(hidden_delta, self._prior_inputs)
             self._hidden_weights[:, i] += offset
