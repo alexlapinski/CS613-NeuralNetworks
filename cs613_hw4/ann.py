@@ -124,20 +124,16 @@ class ANN(object):
     def update(self, expected_outputs):
         return self.__backward_propagate(expected_outputs, self._prior_outputs)
 
-    def evaluate(self, inputs, threshold=None):
+    def evaluate(self, inputs):
         """
         Evaluate the trained artificial neural network on a single sample
         :param inputs: A single sample (row vector, each column is a feature)
-        :param threshold: A floating point threshold, if output is above this, true is returned, otherwise, false
         :return: The output of the neural network (row vector, each column an output of each output node)
         """
         output = self.__forward_propagate(inputs)
-        if threshold is None:
-            return output
-        else:
-            return output > threshold
+        return output
 
-    def train(self, inputs, expected_outputs, iterations=1000, verbose=False):
+    def train(self, inputs, expected_outputs, iterations=1000, threshold=0.5, verbose=False):
         """
         Train the neural network using a single sample.
         :param inputs: The single sample used to train the network (row vector, each column is a feature)
@@ -146,8 +142,30 @@ class ANN(object):
         :return: nothing
         """
 
+        assert len(expected_outputs) == inputs.shape[0]
+
+        num_samples = len(expected_outputs)
+        apply_threshold = np.frompyfunc(lambda x: 1 if x > threshold else 0, 1, 1)
+        errors = []
+
         for iteration in xrange(iterations):
             actual_outputs = self.__forward_propagate(inputs)
             self.__backward_propagate(expected_outputs, actual_outputs)
             if verbose:
                 print "Iteration {0}; Output = {1}".format(iteration, actual_outputs)
+
+            fmt_actual_output = apply_threshold(actual_outputs)
+
+            if verbose:
+                print "Computing error"
+
+            # Count all of the true values (where expected == actual)
+            num_correct = np.count_nonzero(expected_outputs == fmt_actual_output)
+            error = 1.0 - (float(num_correct) / float(num_samples))
+            errors.append(error)
+
+            if verbose:
+                print "Error", error
+
+        return errors
+

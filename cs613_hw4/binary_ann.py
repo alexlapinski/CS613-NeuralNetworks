@@ -43,9 +43,11 @@ def execute(dataframe, threshold=0.5, num_hidden_nodes=20, training_data_ratio=2
 
     # 6. During the training process, compute the training error after each iteration.
     #    You will use this to plot the training error vs. iteration number.
-    expected_training_outputs = __select_target_labels(standardized_training_data).values.reshape(-1, 1)
+    expected_training_outputs = __select_target_labels(training_data).values.reshape(-1, 1)
     print "Training Neural Network"
-    network.train(standardized_training_data, expected_training_outputs, iterations)
+    errors = network.train(standardized_training_data, expected_training_outputs, iterations, threshold=threshold)
+
+    # TODO: Plot Errors
 
     # 7. Classifies the testing data using the trained neural network.
     print "Classifying Testing Data"
