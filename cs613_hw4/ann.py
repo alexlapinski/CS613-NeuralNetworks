@@ -5,7 +5,7 @@ def sigma(x):
     return 1.0 / (1.0 + np.exp(-1*x))
 
 
-class SingleANN(object):
+class ANN(object):
     """
     Single input Artificial Neural Network.
     This implementation accepts a single (sample) for forward propagation.
@@ -94,6 +94,7 @@ class SingleANN(object):
         def compute_weight_offset(delta, prior_input):
             return (self._learning_rate / float(num_samples)) * delta.T.dot(prior_input)
 
+        # Output deltas,
         output_deltas = []
         for i in xrange(self._num_output_nodes):
             y_i = expected_outputs[:, i]
