@@ -1,7 +1,17 @@
 import util
+import ann
+import numpy as np
 
 
-def execute(dataframe, threshold=0.5, training_data_ratio=2.0/3):
+def __select_features(dataframe):
+    return dataframe[dataframe.columns[:-1]]
+
+
+def __select_target_labels(dataframe):
+    return dataframe[dataframe.columns[-1]]
+
+
+def execute(dataframe, threshold=0.5, num_hidden_nodes=20, training_data_ratio=2.0/3, iterations=1000):
     """
     Execute the Binary-Artificial Neural Network problem
     :param dataframe: Input raw data
@@ -10,38 +20,52 @@ def execute(dataframe, threshold=0.5, training_data_ratio=2.0/3):
     :return: BinaryMetrics
     """
     learning_parameter = 0.5
-    training_iterations = 1000
 
     # 2. Randomizes the data.
+    print "Randomizing Data"
     random_data = util.randomize_data(dataframe)
 
     # 3. Selects the first 2/3 (round up) of the data for training and the remaining for testing
+    print "Splitting Test and Training Data"
     training_data, test_data = util.split_data(random_data, training_data_ratio)
 
     # 4. Standardizes the data (except for the last column of course as well as the bias feature)
     #    using the training data
+    print "Standardizing Training Data"
+    standardized_training_data, mean, std = util.standardize_data(__select_features(training_data))
 
     # 5. Trains an artificial neural network using the training data
+    #    Our last column is the label column
+    num_inputs = len(dataframe.columns[:-1])
+
+    # Network will add the bias internally
+    network = ann.ANN(num_inputs, num_hidden_nodes, num_output_nodes=1, learning_rate=learning_parameter)
 
     # 6. During the training process, compute the training error after each iteration.
-    #    You will use this
-    #    to plot the training error vs. iteration number.
+    #    You will use this to plot the training error vs. iteration number.
+    expected_training_outputs = __select_target_labels(standardized_training_data).values.reshape(-1, 1)
+    print "Training Neural Network"
+    network.train(standardized_training_data, expected_training_outputs, iterations)
 
     # 7. Classifies the testing data using the trained neural network.
+    print "Classifying Testing Data"
+    expected_test_output = __select_target_labels(test_data)
+    std_test_data, _, _ = util.standardize_data(__select_features(test_data), mean, std)
 
-    # 8. Computes the testing error.
+    raw_actual_test_output = network.evaluate(std_test_data.values)
 
-    # Implementation Details
-    # 2. Make sure to add a bias input node.
-    # 3. Set the learning parameter  = 0.5.
-    # 4. There should only be a single hidden layer.
-    # 5. The hidden layer size should be 20, although this should be a variable parameter.
-    # 6. Do batch gradient descent.
-    # 7. Initialize all weights to random values in the range [-1; 1].
-    # 8. Do 1000 training iterations.
-    # 9. Since this is binary classification, you should only have one output node.
-    # 10. Consider a sample to be positive (Spam) if the output node has a value > 0:50
-    #     and negative (Not Spam) otherwise.
-    # 11. Compute the testing error as
-    #     TestError = 1 - (# test samples correct/ total # of test samples)
-    pass
+    # We can't just apply a normal python function to a numpy array
+    # This will create a ufunc to apply the given lambda to each value
+    apply_threshold = np.frompyfunc(lambda x: 1 if x > threshold else 0, 1, 1)
+    actual_test_output = apply_threshold(raw_actual_test_output)
+
+    # 8. Compute the testing error.
+    print "Computing test error"
+    # Count all of the true values (where expected == actual)
+    num_correct = np.count_nonzero(expected_test_output.values.reshape(-1, 1) == actual_test_output)
+    num_samples = len(expected_test_output)
+    test_error = 1.0 - (float(num_correct) / float(num_samples))
+
+    print "Test Error: ", test_error
+
+    return test_error
