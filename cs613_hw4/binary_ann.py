@@ -14,10 +14,12 @@ def __select_target_labels(dataframe):
 def execute(dataframe, threshold=0.5, num_hidden_nodes=20, training_data_ratio=2.0/3, iterations=1000):
     """
     Execute the Binary-Artificial Neural Network problem
+    :param num_hidden_nodes: Number of hidden nodes to use in ANN
     :param dataframe: Input raw data
-    :param threshold: The threshold value to consider output as 'class 1' (i.e. spam).
+    :param threshold: The minimum threshold value to consider output as 'class 1' (i.e. spam).
     :param training_data_ratio: ratio of the input data to use as training data
-    :return: BinaryMetrics
+    :param iterations: The total number of iterations to train the ANN
+    :return: (final test error, list of training errors for each training iteration)
     """
     learning_parameter = 0.5
 
@@ -45,9 +47,7 @@ def execute(dataframe, threshold=0.5, num_hidden_nodes=20, training_data_ratio=2
     #    You will use this to plot the training error vs. iteration number.
     expected_training_outputs = __select_target_labels(training_data).values.reshape(-1, 1)
     print "Training Neural Network"
-    errors = network.train(standardized_training_data, expected_training_outputs, iterations, threshold=threshold)
-
-    # TODO: Plot Errors
+    training_errors = network.train(standardized_training_data, expected_training_outputs, iterations, threshold=threshold)
 
     # 7. Classifies the testing data using the trained neural network.
     print "Classifying Testing Data"
@@ -57,7 +57,8 @@ def execute(dataframe, threshold=0.5, num_hidden_nodes=20, training_data_ratio=2
     raw_actual_test_output = network.evaluate(std_test_data.values)
 
     # We can't just apply a normal python function to a numpy array
-    # This will create a ufunc to apply the given lambda to each value
+    # This will create a ufunc to apply the given lambda to each value, and map anything greater than the threshold to
+    # '1' Corresponding to the 'Is Spam' class
     apply_threshold = np.frompyfunc(lambda x: 1 if x > threshold else 0, 1, 1)
     actual_test_output = apply_threshold(raw_actual_test_output)
 
@@ -70,4 +71,4 @@ def execute(dataframe, threshold=0.5, num_hidden_nodes=20, training_data_ratio=2
 
     print "Test Error: ", test_error
 
-    return test_error
+    return test_error, training_errors
