@@ -27,10 +27,7 @@ if __name__ == "__main__":
         parser.print_help()
         exit(-1)
 
-    if args.do_binary_ann and not args.data_filepath:
-        args.data_filepath = "./data/spambase.data"
-
-    if args.do_precision_recall and not args.data_filepath:
+    if (args.do_binary_ann or args.do_precision_recall) and not args.data_filepath:
         args.data_filepath = "./data/spambase.data"
 
     if args.do_multi_ann and not args.data_filepath:
@@ -52,11 +49,22 @@ if __name__ == "__main__":
 
     if args.do_precision_recall:
         raw_data = data.read_spambase_dataset(args.data_filepath)
-        print "Executing Precision-Recall"
-        precision_recall.execute(raw_data)
+        print "Executing Precision-Recall Problem"
+        metrics = precision_recall.execute(raw_data)
+        print "Plotting Precision-Recall Graph"
+        graph_filepath = graphing.plot_precision_recall(metrics)
+        print "Saved Graph to '{0}'".format(graph_filepath)
         print ""
 
     if args.do_multi_ann:
         raw_data = data.read_cardiotocography_dataset(args.data_filepath)
         print "Executing Multi-Class Artificial Neural Network"
+        num_inputs = len(raw_data.columns[:-1])
+        test_error, training_errors = binary_ann.BinaryANN(num_inputs).execute(raw_data)
+        print "Plotting Graph of Training Errors"
+        graph_filepath = graphing.plot_binary_ann_errors(training_errors)
+        print "Saved Graph to '{0}'".format(graph_filepath)
+        print ""
+
+
         multi_ann.execute(raw_data)

@@ -42,7 +42,7 @@ class BinaryClassificationMetrics(object):
         Compute the Precision (percentage of things that were classified as positive and actually were positive)
         :return: precision, value between 0.0 and 1.0
         """
-        return self._num_true_positives / (self._num_true_positives + self._num_false_positives)
+        return self._num_true_positives / float(self._num_true_positives + self._num_false_positives)
 
     def calculate_recall(self):
         """
@@ -50,7 +50,7 @@ class BinaryClassificationMetrics(object):
         the percentage of true positives (sensitivity) which were correctly identified.
         :return: recall, value between 0.0 and 1.0
         """
-        return self._num_true_positives / (self._num_true_positives + self._num_false_negatives)
+        return self._num_true_positives / float(self._num_true_positives + self._num_false_negatives)
 
     def calculate_error(self):
         """
@@ -62,4 +62,4 @@ class BinaryClassificationMetrics(object):
         num_incorrect = self._num_false_positives + self._num_false_negatives
         num_samples = num_correct + num_incorrect
 
-        return 1.0 - (num_correct / num_samples)
+        return 1.0 - (float(num_correct) / float(num_samples))

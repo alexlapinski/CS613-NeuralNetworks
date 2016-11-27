@@ -1,5 +1,6 @@
 import binary_ann
 import numpy as np
+import pandas as pd
 
 
 def execute(dataframe):
@@ -10,7 +11,15 @@ def execute(dataframe):
 
     num_inputs = len(dataframe.columns[:-1])
 
-    for threshold in threshold_values:
+    metrics = pd.DataFrame(index=[i for i in xrange(len(threshold_values))],
+                           columns=('threshold', 'precision', 'recall'))
+    for i in xrange(len(threshold_values)):
+        threshold = threshold_values[i]
+        print "Executing BinaryANN using Threshold = {0}".format(threshold)
         ann = binary_ann.BinaryANN(num_inputs, threshold=threshold)
         ann.execute(dataframe)
+        metrics.loc[i] = {'threshold': threshold,
+                          'precision': ann.metrics.calculate_precision(),
+                          'recall': ann.metrics.calculate_recall()}
 
+    return metrics
