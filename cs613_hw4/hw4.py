@@ -43,7 +43,8 @@ if __name__ == "__main__":
     if args.do_binary_ann:
         raw_data = data.read_spambase_dataset(args.data_filepath)
         print "Executing Binary Artificial Neural Network"
-        test_error, training_errors = binary_ann.execute(raw_data)
+        num_inputs = len(raw_data.columns[:-1])
+        test_error, training_errors = binary_ann.BinaryANN(num_inputs).execute(raw_data)
         print "Plotting Graph of Training Errors"
         graph_filepath = graphing.plot_binary_ann_errors(training_errors)
         print "Saved Graph to '{0}'".format(graph_filepath)
@@ -53,6 +54,7 @@ if __name__ == "__main__":
         raw_data = data.read_spambase_dataset(args.data_filepath)
         print "Executing Precision-Recall"
         precision_recall.execute(raw_data)
+        print ""
 
     if args.do_multi_ann:
         raw_data = data.read_cardiotocography_dataset(args.data_filepath)

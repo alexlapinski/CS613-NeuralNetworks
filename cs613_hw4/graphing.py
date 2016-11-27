@@ -23,7 +23,6 @@ def plot_binary_ann_errors(training_errors, output_dir='graphs', filename='binar
     plt.ylabel("Error")
     plt.xlabel("Iteration")
     plt.title("Error = 1 - (# correctly identified)(Total # of samples)", fontsize=10, color='gray')
-    plt.subplots_adjust(top=0.8)
 
     graph_filepath = os.path.join(output_dir, filename)
     plt.savefig(graph_filepath)
