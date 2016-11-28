@@ -37,13 +37,15 @@ if __name__ == "__main__":
 
     print "Reading Data from '{0}'".format(args.data_filepath)
 
+    graphing_helper = graphing.GraphingHelper()
+
     if args.do_binary_ann:
         raw_data = data.read_spambase_dataset(args.data_filepath)
         print "Executing Binary Artificial Neural Network"
         num_inputs = len(raw_data.columns[:-1])
         test_error, training_errors = binary_ann.BinaryANN(num_inputs).execute(raw_data)
         print "Plotting Graph of Training Errors"
-        graph_filepath = graphing.plot_binary_ann_errors(training_errors)
+        graph_filepath = graphing_helper.plot_binary_ann_errors(training_errors)
         print "Saved Graph to '{0}'".format(graph_filepath)
         print ""
 
@@ -52,7 +54,7 @@ if __name__ == "__main__":
         print "Executing Precision-Recall Problem"
         metrics = precision_recall.execute(raw_data)
         print "Plotting Precision-Recall Graph"
-        graph_filepath = graphing.plot_precision_recall(metrics)
+        graph_filepath = graphing_helper.plot_precision_recall(metrics)
         print "Saved Graph to '{0}'".format(graph_filepath)
         print ""
 
@@ -60,11 +62,8 @@ if __name__ == "__main__":
         raw_data = data.read_cardiotocography_dataset(args.data_filepath)
         print "Executing Multi-Class Artificial Neural Network"
         num_inputs = len(raw_data.columns[:-1])
-        test_error, training_errors = binary_ann.BinaryANN(num_inputs).execute(raw_data)
+        test_error, training_errors = multi_ann.MultiANN(num_inputs).execute(raw_data)
         print "Plotting Graph of Training Errors"
-        graph_filepath = graphing.plot_binary_ann_errors(training_errors)
+        graph_filepath = graphing_helper.plot_multi_ann_errors(training_errors)
         print "Saved Graph to '{0}'".format(graph_filepath)
         print ""
-
-
-        multi_ann.execute(raw_data)

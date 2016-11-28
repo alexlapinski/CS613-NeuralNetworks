@@ -95,29 +95,35 @@ class ANN(object):
             return (self._learning_rate / float(num_samples)) * delta.T.dot(prior_input)
 
         # Output deltas,
-        output_deltas = []
+        output_deltas = np.zeros((self._num_output_nodes, num_samples))
         for i in xrange(self._num_output_nodes):
             y_i = expected_outputs[:, i]
             o_i = actual_outputs[:, i]
             # Compute Output Delta
             output_delta = (y_i - o_i) * o_i * (1 - o_i)
-            output_deltas.append(output_delta)
+            output_deltas[i, :] = output_delta
 
             # Update Output Weights
             h = self._prior_hidden_outputs
             offset = compute_weight_offset(output_delta, h)
             self._output_weights[:, i] += offset
 
+        if self._num_output_nodes == 1:
+            sum_weighted_deltas = output_deltas * self._output_weights
+        else:
+            sum_weighted_deltas = output_deltas.T.dot(self._output_weights)
+
         # Compute Inner Delta
         for i in xrange(self._num_hidden_nodes):
-            sum_weighted_deltas = 0
-            for k in xrange(self._num_output_nodes):
-                theta = self._output_weights[i, k]
-                output_delta = output_deltas[k]
-                sum_weighted_deltas += output_delta * theta
-
             prior_output = self._prior_hidden_outputs[:, i]
-            hidden_delta = sum_weighted_deltas * prior_output * (1 - prior_output)
+
+            if num_samples == 1 and self._num_output_nodes == 1:
+                output_delta = sum_weighted_deltas[i, :]
+                # For some reason, we need to do  this only when we have 1 sample and 1 output node
+            else:
+                output_delta = sum_weighted_deltas[:, i]
+
+            hidden_delta = output_delta * prior_output * (1 - prior_output)
             offset = compute_weight_offset(hidden_delta, self._prior_inputs)
             self._hidden_weights[:, i] += offset
 
