@@ -1,5 +1,6 @@
 import argparse
 import matplotlib.pyplot as plt
+import os
 import data
 import binary_ann
 import multi_ann
@@ -30,10 +31,10 @@ if __name__ == "__main__":
         exit(-1)
 
     if (args.do_binary_ann or args.do_precision_recall) and not args.data_filepath:
-        args.data_filepath = "./data/spambase.data"
+        args.data_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "spambase.data")
 
     if args.do_multi_ann and not args.data_filepath:
-        args.data_filepath = "./data/CTG.csv"
+        args.data_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "CTG.csv")
 
     plt.style.use(args.style)
 

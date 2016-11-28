@@ -7,7 +7,7 @@ class GraphingHelper(object):
     @staticmethod
     def __ensure_dir_exists(directory):
         if not os.path.exists(directory):
-            os.mkdirs(directory)
+            os.makedirs(directory)
 
     def __init__(self, output_dir='graphs'):
         """
