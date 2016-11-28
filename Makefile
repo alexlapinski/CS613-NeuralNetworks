@@ -5,6 +5,6 @@ build: init
 	python setup.py sdist
 
 test:
-	nosetests tests
+	pytest tests
 
 .PHONY: init test
