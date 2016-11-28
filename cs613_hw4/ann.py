@@ -140,6 +140,30 @@ class ANN(object):
 
         return outputs
 
+    def _find_output_delta(self, expected_values, actual_values):
+        return (expected_values - actual_values) * actual_values * (1 - actual_values)
+
+    def _find_inner_delta(self, output_deltas):
+        num_samples = self._prior_inputs.shape[0]
+        hidden_delta = np.zeros((num_samples, self._num_hidden_nodes))
+        for i in xrange(self._num_hidden_nodes):
+            prior_output = self._prior_hidden_outputs[:, i]
+
+            weighted_output_delta_sum = 0
+            for j in xrange(self._num_output_nodes):
+                # Get the weights from hidden_node_i to all output nodes
+                thetas = self._output_weights[i, :]
+
+                # Get the deltas for output node_j
+                output_delta = output_deltas[j]
+
+                # Add the product of the delta values and the weight from hidden_node_i to output_node_j
+                weighted_output_delta_sum += thetas[j] * output_delta
+
+            hidden_delta[:, i] = weighted_output_delta_sum * prior_output * (1 - prior_output)
+
+        return hidden_delta
+
     def __backward_propagate(self, expected_outputs, actual_outputs):
         """
         Backward propagate the error based on expected outputs through the node weights
@@ -158,10 +182,9 @@ class ANN(object):
         # Output deltas,
         output_deltas = []
         for i in xrange(self._num_output_nodes):
-            y_i = expected_outputs[:, i]
-            o_i = actual_outputs[:, i]
-            # Compute Output Delta
-            output_delta = (y_i - o_i) * o_i * (1 - o_i)
+            y = expected_outputs[:, i]
+            o = actual_outputs[:, i]
+            output_delta = self._find_output_delta(y, o)
             output_deltas.append(output_delta)
 
             # Update Output Weights
@@ -169,22 +192,11 @@ class ANN(object):
             offset = compute_weight_offset(output_delta, h)
             self._output_weights[:, i] += offset
 
-        # Compute Inner Delta
+        hidden_deltas = self._find_inner_delta(output_deltas)
+
+        # Compute Inner Offsets
         for i in xrange(self._num_hidden_nodes):
-            prior_output = self._prior_hidden_outputs[:, i]
-
-            weighted_output_delta_sum = 0
-            for j in xrange(self._num_output_nodes):
-                # Get the weights from hidden_node_i to all output nodes
-                thetas = self._output_weights[i, :]
-
-                # Get the deltas for output node_j
-                output_delta = output_deltas[j]
-
-                # Add the product of the delta values and the weight from hidden_node_i to output_node_j
-                weighted_output_delta_sum += thetas[j]*output_delta
-
-            hidden_delta = output_delta * prior_output * (1 - prior_output)
+            hidden_delta = hidden_deltas[:, i]
             offset = compute_weight_offset(hidden_delta, self._prior_inputs)
             self._hidden_weights[:, i] += offset
 
