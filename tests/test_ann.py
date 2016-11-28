@@ -68,9 +68,9 @@ def test_backward_propagation():
     expected_new_output_weights = np.array([[-0.44905533], [0.77172496]])
     assert np.allclose(network.output_weights, expected_new_output_weights, atol=0.001)
 
-    expected_new_hidden_weights = np.array([[0.39265727386632238, 0.31146604016883561],
-                                            [-0.70489515075578502, 0.90764402677922373],
-                                            [-0.11223787688946278, 0.11911006694805942]])
+    expected_new_hidden_weights = np.array([[0.4163515, 0.31485768],
+                                            [-0.689099,    0.90990512],
+                                            [-0.07274751, 0.12476279]])
 
     assert np.allclose(network.hidden_weights, expected_new_hidden_weights, atol=0.001)
 
@@ -93,9 +93,9 @@ def test_backward_propagation_batch():
     expected_new_output_weights = np.array([[-0.50082647], [0.68764965]])
     assert np.allclose(network.output_weights, expected_new_output_weights, atol=0.001)
 
-    expected_new_hidden_weights = np.array([[0.39755125, 0.30303854],
-                                            [-0.69696917, 0.89616098],
-                                            [-0.09859497, 0.09816457]])
+    expected_new_hidden_weights = np.array([[0.40488941, 0.30441873],
+                                            [-0.70605167, 0.89441718],
+                                            [-0.10280542, 0.09733086]])
 
     assert np.allclose(network.hidden_weights, expected_new_hidden_weights, atol=0.001)
 
@@ -139,9 +139,9 @@ def test_backward_propagation_multi_output():
                                             [0.77172495, -0.38329426]])
     assert np.allclose(network.output_weights, expected_new_output_weights, atol=0.001)
 
-    expected_new_hidden_weights = np.array([[0.37800298, 0.31316328],
-                                            [-0.71466468, 0.90877552],
-                                            [-0.1366617, 0.12193879]])
+    expected_new_hidden_weights = np.array([[0.38101099, 0.28274577],
+                                            [-0.71265934,  0.88849718],
+                                            [-0.13164835, 0.07124294]])
 
     assert np.allclose(network.hidden_weights, expected_new_hidden_weights, atol=0.001)
 
