@@ -18,7 +18,7 @@ class GraphingHelper(object):
         self._output_dir = output_dir
         self.__ensure_dir_exists(self._output_dir)
 
-    def plot_binary_ann_errors(self, training_errors, filename='binary_ann_training_error.png'):
+    def plot_training_ann_errors(self, training_errors, title=None, filename='ann_training_error.png'):
         """
         Plot the training errors for each iteration.
         :param training_errors: list of errors for each training iteration
@@ -29,7 +29,9 @@ class GraphingHelper(object):
         plt.plot(training_errors, color='r')
         plt.ylabel("Error")
         plt.xlabel("Iteration")
-        plt.title("Error = 1 - (# correctly identified)(Total # of samples)", fontsize=10, color='gray')
+
+        if title is not None:
+            plt.title(title)
 
         graph_filepath = os.path.join(self._output_dir, filename)
         plt.savefig(graph_filepath)
@@ -53,14 +55,3 @@ class GraphingHelper(object):
         plt.savefig(graph_filepath)
 
         return graph_filepath
-
-    def plot_multi_ann_errors(self, training_errors, filename='multi_ann_training_error.png'):
-        """
-        Plot the training errors for each iteration
-        :param training_errors: list of errors for each training iteration
-        :param filename: Graph filename
-        :return: full path to the created image
-        """
-
-        # TODO: Create The Graph
-        pass

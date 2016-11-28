@@ -154,7 +154,7 @@ def test_train():
     num_hidden_nodes = 3
     num_output_nodes = 1
     network = cs.ann.ANN(num_inputs, num_hidden_nodes, num_output_nodes)
-    network.train(inputs, expected_outputs, verbose=True)
+    network.train_binary(inputs, expected_outputs, verbose=True)
 
     print "Final Hidden Weights:"
     print network.hidden_weights
@@ -175,7 +175,7 @@ def test_train_multiple_outputs():
     num_hidden_nodes = 3
     num_output_nodes = 2
     network = cs.ann.ANN(num_inputs, num_hidden_nodes, num_output_nodes)
-    network.train(inputs, expected_outputs, verbose=True)
+    network.train_binary(inputs, expected_outputs, verbose=True)
 
     print "Final Hidden Weights:"
     print network.hidden_weights
@@ -197,19 +197,19 @@ def test_train_multiple_samples():
 
     inputs = np.array([1, 2, 3])
     expected_outputs = np.array([1])
-    network.train(inputs, expected_outputs, verbose=True)
+    network.train_binary(inputs, expected_outputs, verbose=True)
 
     inputs = np.array([0.1, 3, 2])
     expected_outputs = np.array([0])
-    network.train(inputs, expected_outputs, verbose=True)
+    network.train_binary(inputs, expected_outputs, verbose=True)
 
     inputs = np.array([1, 2, 3])
     expected_outputs = np.array([1])
-    network.train(inputs, expected_outputs, verbose=True)
+    network.train_binary(inputs, expected_outputs, verbose=True)
 
     inputs = np.array([1, 0, 1])
     expected_outputs = np.array([1])
-    network.train(inputs, expected_outputs, verbose=True)
+    network.train_binary(inputs, expected_outputs, verbose=True)
 
     print "Final Hidden Weights:"
     print network.hidden_weights

@@ -20,6 +20,8 @@ if __name__ == "__main__":
                         help="Set the matplotlib render style (default: ggplot)")
     parser.add_argument("--data", action="store", dest="data_filepath", type=str,
                         help="Set the filepath of the data csv file.")
+    parser.add_argument("--output-dir", action="store", dest="output_dir", default="graphs",
+                        help="Set the output directory for graphs (default 'graphs')")
 
     args = parser.parse_args()
 
@@ -37,7 +39,7 @@ if __name__ == "__main__":
 
     print "Reading Data from '{0}'".format(args.data_filepath)
 
-    graphing_helper = graphing.GraphingHelper()
+    graphing_helper = graphing.GraphingHelper(args.output_dir)
 
     if args.do_binary_ann:
         raw_data = data.read_spambase_dataset(args.data_filepath)
@@ -45,7 +47,9 @@ if __name__ == "__main__":
         num_inputs = len(raw_data.columns[:-1])
         test_error, training_errors = binary_ann.BinaryANN(num_inputs).execute(raw_data)
         print "Plotting Graph of Training Errors"
-        graph_filepath = graphing_helper.plot_binary_ann_errors(training_errors)
+        graph_filepath = graphing_helper.plot_training_ann_errors(training_errors,
+                                                                  title="Binary ANN Training Error",
+                                                                  filename="binary_ann_training_errors.png")
         print "Saved Graph to '{0}'".format(graph_filepath)
         print ""
 
@@ -64,6 +68,8 @@ if __name__ == "__main__":
         num_inputs = len(raw_data.columns[:-1])
         test_error, training_errors = multi_ann.MultiANN(num_inputs).execute(raw_data)
         print "Plotting Graph of Training Errors"
-        graph_filepath = graphing_helper.plot_multi_ann_errors(training_errors)
+        graph_filepath = graphing_helper.plot_training_ann_errors(training_errors,
+                                                                  title="Multi-class ANN Training Error",
+                                                                  filename="multiclass_ann_training_errors.png")
         print "Saved Graph to '{0}'".format(graph_filepath)
         print ""

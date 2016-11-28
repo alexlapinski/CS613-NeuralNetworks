@@ -1,25 +1,23 @@
 import util
 import ann
-import metrics
-import numpy as np
 
 
 class MultiANN(object):
 
-    def __init__(self, num_inputs, threshold=0.5, num_hidden_nodes=20, training_data_ratio=2.0/3.0, iterations=1000):
+    def __init__(self, num_inputs, num_hidden_nodes=20, training_data_ratio=2.0/3.0, iterations=1000, labels=(1, 2, 3)):
         """
-        Create an instance of th BinaryANN class used to execute the Binary ANN Problem
+        Create an instance of th MultiANN class used to execute the Multi-class ANN Problem
         :param num_hidden_nodes: Number of hidden nodes to use in ANN
-        :param threshold: The minimum threshold value to consider output as 'class 1' (i.e. spam).
         :param training_data_ratio: ratio of the input data to use as training data
         :param iterations: The total number of iterations to train the ANN
+        :param labels: A tuple of labels, the first label in the tuple corresponds to the first output node
         """
         self._training_data_ratio = training_data_ratio
         self._iterations = iterations
-        self._threshold = threshold
+        self._multiclass_helper = ann.MulticlassHelper(labels)
         self._network = ann.ANN(num_inputs=num_inputs,
                                 num_hidden_nodes=num_hidden_nodes,
-                                num_output_nodes=3,
+                                num_output_nodes=len(labels),
                                 learning_rate=0.5)
 
     @staticmethod
@@ -29,23 +27,6 @@ class MultiANN(object):
     @staticmethod
     def __select_target_labels(dataframe):
         return dataframe[dataframe.columns[-1]]
-
-    @staticmethod
-    def __compute_error(expected, actual):
-        # TODO: Pick the max value from each output node to assign a 'class'
-        return 0
-
-    @staticmethod
-    def __compute_expected_outputs(class_labels):
-        """
-        Take the outputs (represented as class labels) and produce individual probabilities for each output node
-        We have 3 output nodes, each represents the probability of a given class.
-        For example, class 1 => [1, 0, 0], Class 2 => [0, 1, 0]
-        :param class_labels: A single column-vector of class labels
-        :return: a 3 x N matrix, one column per class label probability
-        """
-
-        # TODO
 
     def execute(self, dataframe):
         """
@@ -72,20 +53,21 @@ class MultiANN(object):
         # 6. During the training process, compute the training error after each iteration.
         #    You will use this to plot the training error vs. iteration number.
         expected_training_output_labels = self.__select_target_labels(training_data).values.reshape(-1, 1)
-        expected_training_outputs = self.__compute_expected_outputs(expected_training_output_labels)
         print "Training Neural Network"
-        training_errors = self._network.train(standardized_training_data, expected_training_outputs, self._iterations)
+        training_errors = self._network.train_multiclass(standardized_training_data, expected_training_output_labels,
+                                                         self._iterations)
 
         # 7. Classifies the testing data using the trained neural network.
         print "Classifying Testing Data"
-        expected_test_output = self.__select_target_labels(test_data)
+        expected_test_output = self.__select_target_labels(test_data).values.reshape(-1, 1)
         std_test_data, _, _ = util.standardize_data(self.__select_features(test_data), mean, std)
 
         actual_test_output = self._network.evaluate(std_test_data.values)
 
         # 8. Compute the testing error.
         print "Computing Metrics"
-        test_error = self.__calculate_error(expected_test_output, actual_test_output)
+        labeled_output = self._multiclass_helper.assign_label(actual_test_output)
+        test_error = self._multiclass_helper.calculate_error(expected_test_output, labeled_output)
         print "Test Error: ", test_error
 
         return test_error, training_errors

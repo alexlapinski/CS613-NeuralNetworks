@@ -19,7 +19,7 @@ def test_multi_inputs(neural_net):
     inputs = np.array([[1, 2, 2], [2, 2, 2], [1, 3, 3], [2, 2, 2]])
     expected_output = np.array([[1], [0], [1], [0]])
 
-    neural_net.train(inputs, expected_output)
+    neural_net.train_binary(inputs, expected_output)
 
     print "Final Weights"
     print_network_weights(neural_net)
@@ -33,7 +33,7 @@ def test_single_input(neural_net):
     inputs = np.array([[1, 2, 2, 1]])
     expected_output = np.array([[1]])
 
-    neural_net.train(inputs, expected_output)
+    neural_net.train_binary(inputs, expected_output)
 
     print "Final Weights"
     print_network_weights(neural_net)

@@ -93,7 +93,7 @@ class BinaryANN(object):
         #    You will use this to plot the training error vs. iteration number.
         expected_training_outputs = self.__select_target_labels(training_data).values.reshape(-1, 1)
         print "Training Neural Network"
-        training_errors = self._network.train(standardized_training_data, expected_training_outputs, self._iterations)
+        training_errors = self._network.train_binary(standardized_training_data, expected_training_outputs, self._iterations)
 
         # 7. Classifies the testing data using the trained neural network.
         print "Classifying Testing Data"
